@@ -33,6 +33,13 @@ var repoURL string
 var s3Cmd = &cobra.Command{
 	Use:   "s3",
 	Short: "Upload a chart to an S3 helm repository",
+  Long: `Upload a chart to an S3 helm repository.
+  This command relies on your local AWS authentication configuration. See:
+  https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
+
+  The configured credentials must have read/write access to the S3 bucket
+  hosting the Helm repository`,
+
 	Run: func(cmd *cobra.Command, args []string) {
 		// Retrieve the application configuration.
 		upldconfig := initS3Config()
@@ -52,7 +59,7 @@ func init() {
   s3Cmd.Flags().StringVar(&repoURL, "repo", "", "The URL of the remote repository")
   viper.SetDefault("chartdir", "/charts")
   viper.SetDefault("indexpath", "/index.yaml")
-  uploadCmd.AddCommand(s3Cmd)
+  RootCmd.AddCommand(s3Cmd)
 }
 
 func initS3Config() (*config.Config) {
