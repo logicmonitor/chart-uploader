@@ -1,7 +1,7 @@
 FROM golang:1.9 as build
 WORKDIR $GOPATH/src/github.com/logicmonitor/chart-uploader
-RUN git clone https://github.com/logicmonitor/chart-uploader.git ./ \
-    && go get \
+COPY ./ ./
+RUN go get \
     && GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /chart-uploader
 
 FROM golang:1.9 as helm
@@ -12,7 +12,7 @@ FROM golang:1.9 as test
 WORKDIR $GOPATH/src/github.com/logicmonitor/chart-uploader
 RUN go get -u github.com/alecthomas/gometalinter
 RUN gometalinter --install
-COPY --from=build $GOPATH/src/github.com/logicmonitor/chart-uploader ./
+COPY --from=build $GOPATH $GOPATH
 RUN chmod +x ./scripts/test.sh; sync; ./scripts/test.sh
 RUN cp coverage.txt /coverage.txt
 
