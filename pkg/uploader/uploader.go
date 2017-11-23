@@ -2,6 +2,7 @@ package uploader
 
 import (
 	"io/ioutil"
+	"os"
 	"os/exec"
 
 	"github.com/logicmonitor/chart-uploader/pkg/config"
@@ -29,6 +30,7 @@ func UploadS3(upldConfig *config.Config) error {
 	}
 
 	log.Infof("Successfully uploaded charts in %s to %s", upldConfig.ChartPath, upldConfig.RepoURL)
+	cleanup(constants.LocalIndexFilename)
 	return nil
 }
 
@@ -73,4 +75,9 @@ func shellCmd(name string, args []string) (string, error) {
 		return "", err
 	}
 	return string(slurp), nil
+}
+
+func cleanup(filename string) {
+	log.Debugf("Deleting %s", filename)
+	os.Remove(filename)
 }
