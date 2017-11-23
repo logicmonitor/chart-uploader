@@ -16,10 +16,10 @@ package cmd
 
 import (
   "github.com/logicmonitor/chart-uploader/pkg/config"
+  "github.com/logicmonitor/chart-uploader/pkg/constants"
   "github.com/logicmonitor/chart-uploader/pkg/uploader"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-  "github.com/spf13/viper"
 )
 
 var bucket string
@@ -57,12 +57,17 @@ func init() {
   s3Cmd.Flags().StringVar(&indexPath, "indexpath", "", "Path to index.yaml in the remote repository (Defaults to /index.yaml)")
   s3Cmd.Flags().StringVar(&region, "region", "", "S3 bucket region")
   s3Cmd.Flags().StringVar(&repoURL, "repo", "", "The URL of the remote repository")
-  viper.SetDefault("chartdir", "/charts")
-  viper.SetDefault("indexpath", "/index.yaml")
   RootCmd.AddCommand(s3Cmd)
 }
 
 func initS3Config() (*config.Config) {
+  if chartPath == "" {
+    chartPath = constants.DefaultChartDir
+  }
+  if indexPath == "" {
+    indexPath = constants.DefaultIndexPath
+  }
+
   return &config.Config{
     ChartPath: chartPath,
     IndexPath: indexPath,

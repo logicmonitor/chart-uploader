@@ -9,3 +9,8 @@ const (
 	// RepoTypeS3 is the config value for specifying an S3 repo
 	RepoTypeS3 = "s3"
 )
+
+const (
+	DefaultChartDir  = "/charts"
+	DefaultIndexPath = "/index.yaml"
+)
