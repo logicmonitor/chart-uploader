@@ -59,11 +59,11 @@ func UploadS3(upldConfig *config.Config) error {
 
 func updateAndMergeIndex(chartPath string, repoURL string, localIndexPath string) error {
 	args := []string{
-		"repo", "index", chartPath,
+		chartPath,
 		"--merge", localIndexPath,
 		"--url", repoURL,
 	}
-	res, err := shellCmd("helm", args)
+	res, err := createHelmIndex(args)
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func updateAndMergeIndex(chartPath string, repoURL string, localIndexPath string
 
 func getCharts(dir string) []string {
 	var files []string
-	filepath.Walk(dir, func(path string, f os.FileInfo, _ error) error {
+	err := filepath.Walk(dir, func(path string, f os.FileInfo, _ error) error {
 		if !f.IsDir() {
 			r, err := regexp.MatchString(constants.ChartExtension, f.Name())
 			if err == nil && r {
@@ -84,12 +84,16 @@ func getCharts(dir string) []string {
 		}
 		return nil
 	})
+	if err != nil {
+		log.Warnf("%s", err)
+	}
 	return files
 }
 
-func shellCmd(name string, args []string) (string, error) {
-	log.Debugf("Running command %s %s", name, args)
-	cmd := exec.Command(name, args...)
+func createHelmIndex(args []string) (string, error) {
+	args = append(args, "repo", "index")
+	log.Debugf("Running command %s %s %s %s", "helm", args)
+	cmd := exec.Command("helm", args...)
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -116,5 +120,8 @@ func shellCmd(name string, args []string) (string, error) {
 
 func cleanup(filename string) {
 	log.Debugf("Deleting %s", filename)
-	os.Remove(filename)
+	err := os.Remove(filename)
+	if err != nil {
+		log.Warnf("%s", err.Error())
+	}
 }

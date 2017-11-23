@@ -15,10 +15,11 @@
 package cmd
 
 import (
-  "os"
-  "github.com/logicmonitor/chart-uploader/pkg/config"
-  "github.com/logicmonitor/chart-uploader/pkg/constants"
-  "github.com/logicmonitor/chart-uploader/pkg/uploader"
+	"os"
+
+	"github.com/logicmonitor/chart-uploader/pkg/config"
+	"github.com/logicmonitor/chart-uploader/pkg/constants"
+	"github.com/logicmonitor/chart-uploader/pkg/uploader"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -28,14 +29,13 @@ var chartPath string
 var indexPath string
 var rmtChartPath string
 var region string
-var repoType string
 var repoURL string
 
 // s3cmd represents thes3  upload command
 var s3Cmd = &cobra.Command{
 	Use:   "s3",
 	Short: "Upload a chart to an S3 helm repository",
-  Long: `Upload a chart to an S3 helm repository.
+	Long: `Upload a chart to an S3 helm repository.
   This command relies on your local AWS authentication configuration. See:
   https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
 
@@ -45,47 +45,47 @@ var s3Cmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// Retrieve the application configuration.
 		upldconfig := initS3Config()
-    err := uploader.UploadS3(upldconfig)
-    if err != nil {
-      log.Fatalf("Failed to upload chart: %v", err)
-    }
+		err := uploader.UploadS3(upldconfig)
+		if err != nil {
+			log.Fatalf("Failed to upload chart: %v", err)
+		}
 	},
 }
 
 func init() {
 	log.SetLevel(log.DebugLevel)
-  s3Cmd.Flags().StringVar(&bucket, "bucket", "", "Helm repo s3 bucket")
-  s3Cmd.Flags().StringVar(&chartPath, "chartdir", "", "Local path to the directory containing chart(s) to upload (Defaults to cwd)")
-  s3Cmd.Flags().StringVar(&rmtChartPath, "remotechartpath", "", "Remote path to upload chart(s) (Defaults to /)")
-  s3Cmd.Flags().StringVar(&indexPath, "indexpath", "", "Path to index.yaml in the remote repository (Defaults to /index.yaml)")
-  s3Cmd.Flags().StringVar(&region, "region", "", "S3 bucket region")
-  s3Cmd.Flags().StringVar(&repoURL, "repo", "", "The URL of the remote repository")
-  RootCmd.AddCommand(s3Cmd)
+	s3Cmd.Flags().StringVar(&bucket, "bucket", "", "Helm repo s3 bucket")
+	s3Cmd.Flags().StringVar(&chartPath, "chartdir", "", "Local path to the directory containing chart(s) to upload (Defaults to cwd)")
+	s3Cmd.Flags().StringVar(&rmtChartPath, "remotechartpath", "", "Remote path to upload chart(s) (Defaults to /)")
+	s3Cmd.Flags().StringVar(&indexPath, "indexpath", "", "Path to index.yaml in the remote repository (Defaults to /index.yaml)")
+	s3Cmd.Flags().StringVar(&region, "region", "", "S3 bucket region")
+	s3Cmd.Flags().StringVar(&repoURL, "repo", "", "The URL of the remote repository")
+	RootCmd.AddCommand(s3Cmd)
 }
 
-func initS3Config() (*config.Config) {
-  if chartPath == "" {
-    var err error
-    chartPath, err = os.Getwd()
-  	if err != nil {
-  		panic(err)
-    }
-  }
-  if indexPath == "" {
-    indexPath = constants.DefaultIndexPath
-  }
-  if rmtChartPath == "" {
-    rmtChartPath = constants.DefaultRmtChartPath
-  }
+func initS3Config() *config.Config {
+	if chartPath == "" {
+		var err error
+		chartPath, err = os.Getwd()
+		if err != nil {
+			panic(err)
+		}
+	}
+	if indexPath == "" {
+		indexPath = constants.DefaultIndexPath
+	}
+	if rmtChartPath == "" {
+		rmtChartPath = constants.DefaultRmtChartPath
+	}
 
-  return &config.Config{
-    ChartPath: chartPath,
-    RmtChartPath: rmtChartPath,
-    IndexPath: indexPath,
-    RepoURL: repoURL,
-    S3: config.S3Config{
-      Bucket: bucket,
-      Region: region,
-    },
-  }
+	return &config.Config{
+		ChartPath:    chartPath,
+		RmtChartPath: rmtChartPath,
+		IndexPath:    indexPath,
+		RepoURL:      repoURL,
+		S3: config.S3Config{
+			Bucket: bucket,
+			Region: region,
+		},
+	}
 }

@@ -6,17 +6,12 @@ const (
 )
 
 const (
-	// RepoTypeS3 is the config value for specifying an S3 repo
-	RepoTypeS3 = "s3"
-)
-
-const (
 	// ChartExtension is the default chart file extension
 	ChartExtension = ".tgz"
 )
 
 const (
-	// DefaultChartDir is the default path containting charts to upload
+	// DefaultChartDir is the default path containtin charts to upload
 	DefaultChartDir = "/charts"
 	// DefaultIndexPath is the default path for remote index files
 	DefaultIndexPath = "/index.yaml"

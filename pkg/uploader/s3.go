@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
+	awsclient "github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -16,7 +17,7 @@ func getAwsSess(region string) *session.Session {
 	}))
 }
 
-func downloadS3Object(bucket string, key string, filename string, sess *session.Session) error {
+func downloadS3Object(bucket string, key string, filename string, sess awsclient.ConfigProvider) error {
 	log.Debugf("Downloading S3 object %s%s to %s", bucket, key, filename)
 	downloader := s3manager.NewDownloader(sess)
 
@@ -31,13 +32,10 @@ func downloadS3Object(bucket string, key string, filename string, sess *session.
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
-func uploadS3Object(bucket string, key string, filename string, sess *session.Session) error {
+func uploadS3Object(bucket string, key string, filename string, sess awsclient.ConfigProvider) error {
 	log.Debugf("Uploading file %s to S3 %s%s", filename, bucket, key)
 	// Create an uploader with the session and default options
 	uploader := s3manager.NewUploader(sess)
