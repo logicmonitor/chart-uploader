@@ -16,7 +16,7 @@ RUN apk --update add ca-certificates \
     && rm -rf /var/cache/apk/* \
     && rm -rf /var/lib/apk/*
 
-WORKDIR /app
+WORKDIR /charts
 COPY --from=build /chart-uploader /bin
 COPY --from=helm /tmp/linux-amd64/helm /usr/local/bin/helm
 RUN chmod +x /usr/local/bin/*

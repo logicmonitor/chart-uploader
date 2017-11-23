@@ -17,12 +17,13 @@ Usage:
   chart-uploader s3 [flags]
 
 Flags:
-      --bucket string      Helm repo s3 bucket
-      --chartdir string    Local path to the directory containing chart(s) to upload (Defaults to /charts)
-  -h, --help               help for s3
-      --indexpath string   Path to index.yaml in the remote repository (Defaults to /index.yaml)
-      --region string      S3 bucket region
-      --repo string        The URL of the remote repository
+      --bucket string            Helm repo s3 bucket
+      --chartdir string          Local path to the directory containing chart(s) to upload (Defaults to cwd)
+  -h, --help                     help for s3
+      --indexpath string         Path to index.yaml in the remote repository (Defaults to /index.yaml)
+      --region string            S3 bucket region
+      --remotechartpath string   Remote path to upload chart(s) (Defaults to /)
+      --repo string              The URL of the remote repository
 ```
 
 ## Example
@@ -44,4 +45,5 @@ docker run --rm \
       --repo http://my-repo.example.com \
       --bucket my-repo.example.com \
       --region us-west-1
+      --chartdir /charts
 ```

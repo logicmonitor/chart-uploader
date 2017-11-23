@@ -15,6 +15,7 @@
 package cmd
 
 import (
+  "os"
   "github.com/logicmonitor/chart-uploader/pkg/config"
   "github.com/logicmonitor/chart-uploader/pkg/constants"
   "github.com/logicmonitor/chart-uploader/pkg/uploader"
@@ -25,6 +26,7 @@ import (
 var bucket string
 var chartPath string
 var indexPath string
+var rmtChartPath string
 var region string
 var repoType string
 var repoURL string
@@ -53,7 +55,8 @@ var s3Cmd = &cobra.Command{
 func init() {
 	log.SetLevel(log.DebugLevel)
   s3Cmd.Flags().StringVar(&bucket, "bucket", "", "Helm repo s3 bucket")
-  s3Cmd.Flags().StringVar(&chartPath, "chartdir", "", "Local path to the directory containing chart(s) to upload (Defaults to /charts)")
+  s3Cmd.Flags().StringVar(&chartPath, "chartdir", "", "Local path to the directory containing chart(s) to upload (Defaults to cwd)")
+  s3Cmd.Flags().StringVar(&rmtChartPath, "remotechartpath", "", "Remote path to upload chart(s) (Defaults to /)")
   s3Cmd.Flags().StringVar(&indexPath, "indexpath", "", "Path to index.yaml in the remote repository (Defaults to /index.yaml)")
   s3Cmd.Flags().StringVar(&region, "region", "", "S3 bucket region")
   s3Cmd.Flags().StringVar(&repoURL, "repo", "", "The URL of the remote repository")
@@ -62,14 +65,22 @@ func init() {
 
 func initS3Config() (*config.Config) {
   if chartPath == "" {
-    chartPath = constants.DefaultChartDir
+    var err error
+    chartPath, err = os.Getwd()
+  	if err != nil {
+  		panic(err)
+    }
   }
   if indexPath == "" {
     indexPath = constants.DefaultIndexPath
   }
+  if rmtChartPath == "" {
+    rmtChartPath = constants.DefaultRmtChartPath
+  }
 
   return &config.Config{
     ChartPath: chartPath,
+    RmtChartPath: rmtChartPath,
     IndexPath: indexPath,
     RepoURL: repoURL,
     S3: config.S3Config{

@@ -1,9 +1,12 @@
 package uploader
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"regexp"
 
 	"github.com/logicmonitor/chart-uploader/pkg/config"
 	"github.com/logicmonitor/chart-uploader/pkg/constants"
@@ -14,17 +17,37 @@ import (
 func UploadS3(upldConfig *config.Config) error {
 	sess := getAwsSess(upldConfig.S3.Region)
 
-	err := downloadS3Object(upldConfig.S3.Bucket, upldConfig.IndexPath, constants.LocalIndexFilename, sess)
+	localIndex := upldConfig.ChartPath + string(os.PathSeparator) + constants.LocalIndexFilename
+
+	err := downloadS3Object(upldConfig.S3.Bucket, upldConfig.IndexPath, localIndex, sess)
 	if err != nil {
 		return err
 	}
 
-	err = updateAndMergeIndex(upldConfig.ChartPath, upldConfig.RepoURL, constants.LocalIndexFilename)
+	err = updateAndMergeIndex(upldConfig.ChartPath, upldConfig.RepoURL, localIndex)
 	if err != nil {
 		return err
 	}
 
-	err = uploadS3Object(upldConfig.S3.Bucket, upldConfig.IndexPath, constants.LocalIndexFilename, sess)
+	charts := getCharts(upldConfig.ChartPath)
+	// upload the charts
+	upldErr := false
+	errstring := ""
+
+	for _, chart := range charts {
+		err = uploadS3Object(upldConfig.S3.Bucket, upldConfig.RmtChartPath+string(os.PathSeparator)+chart, upldConfig.ChartPath+string(os.PathSeparator)+chart, sess)
+		if err != nil {
+			upldErr = true
+			errstring = errstring + "\n" + err.Error()
+		}
+	}
+
+	if upldErr {
+		return fmt.Errorf(errstring)
+	}
+
+	// update the new index file
+	err = uploadS3Object(upldConfig.S3.Bucket, upldConfig.IndexPath, upldConfig.ChartPath+"/"+constants.LocalIndexFilename, sess)
 	if err != nil {
 		return err
 	}
@@ -48,6 +71,20 @@ func updateAndMergeIndex(chartPath string, repoURL string, localIndexPath string
 		log.Debugf(res)
 	}
 	return nil
+}
+
+func getCharts(dir string) []string {
+	var files []string
+	filepath.Walk(dir, func(path string, f os.FileInfo, _ error) error {
+		if !f.IsDir() {
+			r, err := regexp.MatchString(constants.ChartExtension, f.Name())
+			if err == nil && r {
+				files = append(files, f.Name())
+			}
+		}
+		return nil
+	})
+	return files
 }
 
 func shellCmd(name string, args []string) (string, error) {
