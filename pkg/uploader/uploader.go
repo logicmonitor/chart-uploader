@@ -59,6 +59,8 @@ func UploadS3(upldConfig *config.Config) error {
 
 func updateAndMergeIndex(chartPath string, repoURL string, localIndexPath string) error {
 	args := []string{
+		"repo",
+		"index",
 		chartPath,
 		"--merge", localIndexPath,
 		"--url", repoURL,
@@ -91,8 +93,7 @@ func getCharts(dir string) []string {
 }
 
 func createHelmIndex(args []string) (string, error) {
-	args = append(args, "repo", "index")
-	log.Debugf("Running command %s %s %s %s", "helm", args)
+	log.Debugf("Running command %s %s", "helm", args)
 	cmd := exec.Command("helm", args...)
 
 	stdout, err := cmd.StdoutPipe()
