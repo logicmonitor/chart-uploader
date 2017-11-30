@@ -1,14 +1,17 @@
 FROM golang:1.9 as build
 WORKDIR $GOPATH/src/github.com/logicmonitor/chart-uploader
 COPY ./ ./
+ARG VERSION
 RUN go get \
-    && GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /chart-uploader
+    && GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /chart-uploader -ldflags "-X \"github.com/logicmonitor/k8s-chart-uploader/pkg/constants.Version=${VERSION}\""
 
 FROM golang:1.9 as helm
 ENV HELM_VERSION="v2.6.1"
 RUN curl -L https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -xz -C /tmp
 
 FROM golang:1.9 as test
+ARG CI
+ENV CI=$CI
 WORKDIR $GOPATH/src/github.com/logicmonitor/chart-uploader
 RUN go get -u github.com/alecthomas/gometalinter
 RUN gometalinter --install
